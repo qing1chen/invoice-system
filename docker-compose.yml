@@ -1,0 +1,79 @@
+# ============================================================
+#  发票报销管理系统 - Docker Compose 部署
+#  后端: invoice-toolkit (Python MCP Server)
+#  前端: my-react-app (React + Vite)
+#  noVNC: 在 Docker 中显示有头浏览器，通过网页访问
+# ============================================================
+
+services:
+
+  # ── 后端 MCP Server ──────────────────────────────────────
+  backend:
+    build:
+      context: ./invoice-toolkit
+      dockerfile: Dockerfile.backend
+    container_name: invoice-backend
+    restart: unless-stopped
+
+    # 交互模式 — 支持手动登录时在终端按 Enter 确认
+    stdin_open: true     # docker attach 后可以输入
+    tty: true            # 分配伪终端
+
+    ports:
+      - "8000:8000"
+      - "6080:6080"      # noVNC 网页端口 — 通过浏览器查看容器内的浏览器
+
+    env_file:
+      - .env
+    environment:
+      # 有头浏览器需要的 X 显示环境
+      - DISPLAY=:99
+      # 认证模式：manual = 手动登录优先
+      - AUTH_MODE #= manual
+      # 有头模式
+      - BROWSER_HEADLESS=false
+      # 课题组成员名单（从宿主 .env 透传，供 config.py 读取）
+      - NAME_LIST=${NAME_LIST}
+
+    volumes:
+      - ./invoice-toolkit/data:/app/data
+      - ./invoice-toolkit/model:/app/model
+      - ./invoice-toolkit/cache:/app/cache
+      - ./invoice-toolkit/output:/app/output
+
+    # 增大共享内存（Chromium 有头模式需要）
+    shm_size: '512m'
+
+    networks:
+      - invoice-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ── 前端 React App ──────────────────────────────────────
+  frontend:
+    build:
+      context: ./my-react-app
+      dockerfile: Dockerfile.frontend
+      args:
+        - VITE_LLM_API_KEY=${SILICONFLOW_API_KEY}
+        - VITE_LLM_BASE_URL=${LLM_BASE_URL}
+        - VITE_LLM_MODEL=${LLM_MODEL_NAME}
+        # 课题组成员名单 — 构建时注入到 Vite，供 index.js 读取
+        - VITE_NAME_LIST=${NAME_LIST}
+    container_name: invoice-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - invoice-net
+
+networks:
+  invoice-net:
+    driver: bridge

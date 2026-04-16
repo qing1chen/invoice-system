@@ -1,0 +1,85 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "invoice-toolkit"
+version = "2.1.1"
+description = "发票识别、分类与报销记录匹配工具包 (Invoice OCR, Classification & Matching Toolkit)"
+readme = "README.md"
+license = { text = "MIT" }
+# browser-use >= 0.12 要求 Python >= 3.11
+requires-python = ">=3.11"
+authors = [{ name = "Invoice Toolkit Contributors" }]
+keywords = ["invoice", "ocr", "classification", "matching", "reimbursement", "rag"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+]
+
+dependencies = [
+    # MCP Server
+    "mcp[cli]==1.8.1",
+
+    # LangChain 0.3.x
+    "langchain==0.3.25",
+    "langchain-core==0.3.61",
+    "langchain-openai==0.3.18",
+    "langchain-community==0.3.24",
+    "langchain-text-splitters==0.3.8",
+
+    # LangGraph runtime
+    "langgraph==0.4.1",
+
+    # Data processing
+    "pandas==2.2.3",
+    "openpyxl==3.1.5",
+
+    # Document generation
+    "python-docx==1.1.2",
+
+    # OCR related
+    "requests==2.32.3",
+    "Pillow==11.2.1",
+    "PyMuPDF==1.25.5",
+
+    # Data model
+    "pydantic==2.11.3",
+
+    # RAG 向量检索
+    "faiss-cpu==1.11.0",
+    "docx2txt==0.8",
+
+    # 浏览器自动化（智能填报）
+    # 0.12.x 移除了 BrowserConfig，browser_agent.py 已做兼容
+    #"browser-use==0.12.0",
+    "playwright==1.52.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov", "ruff", "mypy"]
+# 仅需 LangChain Agent 时安装（向后兼容）
+agent = ["openai>=1.0"]
+
+[project.scripts]
+invoice-toolkit = "invoice_toolkit.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true

@@ -1,0 +1,36 @@
+# MCP Server
+mcp[cli]==1.8.1
+
+# LangChain 0.3.x（注意：langchain 系列目前都是 0.3.x）
+langchain==0.3.25
+langchain-core==0.3.61
+langchain-openai==0.3.18
+langchain-community==0.3.24
+langchain-text-splitters==0.3.8
+
+# LangGraph（LangChain 0.3.x Agent 的底层运行时）
+langgraph==0.4.1
+
+# 数据模型
+pydantic==2.11.3
+
+# 数据处理
+pandas==2.2.3
+openpyxl==3.1.5
+
+# Word 文档生成（加班餐情况说明）
+python-docx==1.1.2
+
+# OCR 相关
+requests==2.32.3
+Pillow==11.2.1
+PyMuPDF==1.25.5
+
+# RAG 向量检索
+faiss-cpu==1.11.0
+docx2txt==0.8
+
+# ── 浏览器自动化（智能填报）──
+# 0.12.x 移除了 BrowserConfig，browser_agent.py 已做兼容
+#browser-use==0.12.0
+playwright==1.52.0

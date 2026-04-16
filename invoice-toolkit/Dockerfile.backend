@@ -1,0 +1,90 @@
+# ============================================================
+#  invoice-toolkit 后端 Dockerfile
+#  Python MCP Server + Browser Agent (有头模式 + noVNC)
+#
+#  优化：依赖安装层与源码层分离，改代码不触发 pip 重装
+#        通过 http://localhost:6080 远程查看浏览器界面
+# ============================================================
+
+FROM python:3.11-slim
+
+LABEL maintainer="invoice-toolkit"
+LABEL description="Invoice Toolkit MCP Server + Browser Agent (headed via noVNC)"
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=utf-8 \
+    PROJECT_ROOT=/app \
+    DISPLAY=:99
+
+WORKDIR /app
+
+# ── 系统依赖（很少变动，长期缓存）──
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list.d/debian.sources \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    # ─ Chromium 运行时依赖 ─
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxkbcommon0 \
+    libatspi2.0-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2 \
+    libwayland-client0 \
+    fonts-noto-cjk \
+    # ─ 有头浏览器 + noVNC ─
+    xvfb \
+    x11vnc \
+    x11-utils \
+    git \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── noVNC（很少变动，长期缓存）──
+RUN git clone --depth 1 https://github.com/novnc/noVNC /opt/noVNC \
+    && git clone --depth 1 https://github.com/novnc/websockify /opt/noVNC/utils/websockify \
+    && ln -s /opt/noVNC/vnc.html /opt/noVNC/index.html
+
+# ── [关键优化] 先装依赖，再拷源码 ──────────────────────
+# 第一步：只拷贝依赖声明文件 + 最小包结构（让 pip -e . 能解析依赖）
+COPY pyproject.toml setup.py* setup.cfg* ./
+
+# 创建最小包结构，让 pip 解析 pyproject.toml 时不报错
+# （只需 __init__.py 存在即可，后面会被真实源码覆盖）
+RUN mkdir -p invoice_toolkit && touch invoice_toolkit/__init__.py
+
+# 第二步：安装所有依赖（只要 pyproject.toml 不变，此层永远走缓存）
+RUN pip install --no-cache-dir -i https://pypi.tuna.tsinghua.edu.cn/simple -e .
+
+# ── 安装浏览器二进制（紧跟 pip install，源码变动不会触发重装）──
+RUN (patchright install chromium 2>/dev/null || playwright install chromium) \
+    && echo "✅ Chromium 浏览器已安装"
+
+# 第三步：拷贝真实源码（日常改代码只触发从这里开始的层）
+COPY invoice_toolkit/ ./invoice_toolkit/
+COPY skills/ ./skills/
+
+# 重新做 editable 链接（--no-deps 跳过依赖检查，秒级完成）
+RUN pip install --no-cache-dir --no-deps -e .
+
+RUN mkdir -p /app/data /app/output /app/cache /app/model
+
+# ── 启动脚本 ──
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+EXPOSE 8000 6080
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+CMD ["python", "-m", "invoice_toolkit.mcp_server", "--transport", "http", "--port", "8000"]
