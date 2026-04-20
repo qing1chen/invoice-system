@@ -31,7 +31,7 @@
 
 ### 后端 `invoice-toolkit/` (Python)
 
-- 🔍 **发票 OCR 识别** — 基于百度 OCR,支持增值税发票、电子票据、火车票、出租车票等多种类型
+- 🔍 **发票 OCR 识别** — 基于OCR,支持增值税发票、电子票据、火车票、出租车票等多种类型
 - 🎯 **智能匹配** — LLM 辅助的发票与 Excel 报销记录双向匹配,金额 / 日期 / 商品名多维度对齐
 - 🏷️ **自动分类** — 基于物品简介、报销人、发票内容综合判断,支持出差 / 加班餐 / 快递 / 打印 / 打车 / 材料 / 论文和专利等类别
 - ✅ **附件完整性检查** — 可配置的 Markdown 规则模板,驱动 LLM 检查每张发票的必需附件是否齐全,支持部分附件自动生成(如加班餐情况说明)
@@ -321,7 +321,6 @@ Agent: 根据山东大学差旅费报销管理办法,需要...
 - [LangChain](https://github.com/langchain-ai/langchain) & [LangGraph](https://github.com/langchain-ai/langgraph)
 - [FastMCP](https://github.com/jlowin/fastmcp)
 - [browser-use](https://github.com/browser-use/browser-use)
-- [百度智能云 OCR](https://ai.baidu.com/tech/ocr)
 - [BAAI/bge-large-zh](https://huggingface.co/BAAI/bge-large-zh-v1.5)
 
 ---
