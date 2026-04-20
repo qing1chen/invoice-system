@@ -31,7 +31,7 @@ This is a **monorepo** containing both the Python backend (`invoice-toolkit/`) a
 
 ### Backend `invoice-toolkit/` (Python)
 
-- 🔍 **Invoice OCR** — Baidu OCR integration supporting VAT invoices, e-receipts, train tickets, taxi receipts, and more
+- 🔍 **Invoice OCR** — OCR integration supporting VAT invoices, e-receipts, train tickets, taxi receipts, and more
 - 🎯 **Smart Matching** — LLM-assisted bidirectional matching between OCR'd invoices and Excel reimbursement records
 - 🏷️ **Auto Classification** — Multi-signal classification across configurable categories: travel, overtime meals, delivery, printing, transit, materials, papers & patents
 - ✅ **Attachment Completeness Check** — Markdown-based rule templates drive an LLM checker that validates each invoice's required attachments; supports auto-generation of missing documents
@@ -287,7 +287,6 @@ Released under the [MIT License](./LICENSE).
 - [LangChain](https://github.com/langchain-ai/langchain) & [LangGraph](https://github.com/langchain-ai/langgraph)
 - [FastMCP](https://github.com/jlowin/fastmcp)
 - [browser-use](https://github.com/browser-use/browser-use)
-- [Baidu Cloud OCR](https://ai.baidu.com/tech/ocr)
 - [BAAI/bge-large-zh](https://huggingface.co/BAAI/bge-large-zh-v1.5)
 
 ---
